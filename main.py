@@ -23,62 +23,79 @@ import os
 import subprocess
 import json
 import sys
-currentDir=os.getcwd()
-TOKEN=os.environ['TELEGRAMM_API_BOT_TOKEN']
+currentDir = os.getcwd()
+TOKEN = os.environ['TELEGRAMM_API_BOT_TOKEN']
 
 # Enable logging
-#reponame
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+# reponame
+logging.basicConfig(format='\
+%(asctime)s - \
+%(name)s - \
+%(levelname)s - \
+%(message)s',
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+
+
 def new_domain_check(text):
     check = True
     for line in text.split():
-        if len(line)>10:
+        if len(line) > 10:
             check = False
         if not bool(re.match(r"^([A-Z]|[a-z]|[0-9])+$", line)):
             check = False
     return(check)
+
 
 def banned_check(text):
     if text.split()[0] == "Banned":
         return(True)
     else:
         return(False)
+
+
 def active_processing(text):
     global currentDir
-    os.chdir(currentDir+'/ansible-playbooks')
+    os.chdir(currentDir+'/repo')
     for i in text.split():
-        domain="vavada"+i+".com"
-        process = subprocess.Popen(["bash",currentDir+"/callperlnew.sh",domain], stdout=subprocess.PIPE)
-        output, error = process.communicate()
-    process = subprocess.Popen(["bash",currentDir+"/gitactive.sh"], stdout=subprocess.PIPE)
-    output, error = process.communicate()
+        domain =\
+            os.environ["DOMAIN_MAIN_URL_START"]\
+            + i +\
+            os.environ["DOMAIN_MAIN_URL_END"]
+        print(domain)
+        string = "s/    state: active\n\n/    state: active\n  - name: "+domain+"\n    state: active\n\n/igs"
+        # perl -0777 -i -pe "${string}" vars/production.yml
+
+        subprocess.Popen(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
+        # output, error = process.communicate()
+    subprocess.Popen(["bash", currentDir+"/gitactive.sh"])
+    # output, error = process.communicate()
     try:
         with open('mr.json') as json_file:
             data = json.load(json_file)
         return(data["web_url"])
-    except:
+    except OSError:
         return("cant find mr.json")
-    
+
 
 def banned_processing(text):
     global currentDir
-    os.chdir(currentDir+'/ansible-playbooks')
-    allurls = [x.group() for x in re.finditer(r'([a-z]|[A-Z]|[0-9])*\.([a-z]|[A-Z]|[0-9])*',text)] # all banned urls
-    # perl -0777 -i.original -pe 's/  - name: vavadahugewin001.com\n    state: active/  - name: vavadahugewin001.com\n    state: banned/igs' vars/production.yml
+    os.chdir(currentDir+'/repo')
+    allurls = [x.group() for x in re.finditer(
+        r'([a-z]|[A-Z]|[0-9])*\.([a-z]|[A-Z]|[0-9])*', text)]
     for url in allurls:
-        process = subprocess.Popen(["bash",currentDir+"/callperl.sh",url], stdout=subprocess.PIPE)
-        output, error = process.communicate()
-    process = subprocess.Popen(["bash",currentDir+"/gitbanned.sh"], stdout=subprocess.PIPE)
-    output, error = process.communicate()
+        string = "s/  - name: "+url+"\n    state: active/  - name: "+url+"\n    state: banned/igs"
+        subprocess.Popen(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
+
+    subprocess.Popen(["bash", currentDir+"/gitbanned.sh"])
     try:
         with open('mr.json') as json_file:
             data = json.load(json_file)
         return(data["web_url"])
-    except:
+    except OSError:
         return("cant find mr.json")
+
 
 def check_message(text):
     if new_domain_check(text.text):
@@ -88,8 +105,11 @@ def check_message(text):
     else:
         return(False)
 
-# Define a few command handlers. These usually take the two arguments update and
-# context. Error handlers also receive the raised TelegramError object in error.
+# Define a few command handlers.
+# These usually take the two arguments update andcontext.
+# Error handlers also receive the raised TelegramError object in error.
+
+
 def start(update, context):
     """Send a message when the command /start is issued."""
     update.message.reply_text('Hi!')
@@ -145,6 +165,7 @@ if __name__ == '__main__':
     if str(sys.argv[1]) == "start":
         main()
     if str(sys.argv[1]) == "init":
-        process = subprocess.Popen(("git clone "+os.environ['GITLAB_REPO_SSH']).split(), stdout=subprocess.PIPE)
+        process = subprocess.Popen(
+            ("git clone "+os.environ['GITLAB_REPO_SSH']+" repo").split(),
+            stdout=subprocess.PIPE)
         output, error = process.communicate()
-        
