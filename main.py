@@ -69,7 +69,7 @@ def active_processing(text):
 
         subprocess.Popen(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
         # output, error = process.communicate()
-    subprocess.Popen(["bash", currentDir+"/gitactive.sh"])
+    subprocess.Popen(["bash", currentDir+"/gitprocessing.sh", "active"])
     # output, error = process.communicate()
     try:
         with open('mr.json') as json_file:
@@ -88,7 +88,7 @@ def banned_processing(text):
         string = "s/  - name: "+url+"\n    state: active/  - name: "+url+"\n    state: banned/igs"
         subprocess.Popen(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
 
-    subprocess.Popen(["bash", currentDir+"/gitbanned.sh"])
+    subprocess.Popen(["bash", currentDir+"/gitprocessing.sh", "banned"])
     try:
         with open('mr.json') as json_file:
             data = json.load(json_file)
