@@ -13,8 +13,6 @@ source env/bin/activate || python3 -m venv env && source env/bin/activate
 dep  
 ```
 sudo apt install python3-pip
-```
-```
 pip3 install -r requirements.txt
 ```  
 2- ./main.py init for download repo  
