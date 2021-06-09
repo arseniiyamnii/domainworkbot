@@ -67,14 +67,19 @@ def active_processing(text):
         string = "s/    state: active\n\n/    state: active\n  - name: "+domain+"\n    state: active\n\n/igs"
         # perl -0777 -i -pe "${string}" vars/production.yml
 
-        subprocess.Popen(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
+        subprocess.call(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
         # output, error = process.communicate()
-    subprocess.Popen(["bash", currentDir+"/gitprocessing.sh", "active"])
+    subprocess.call(["bash", currentDir+"/gitprocessing.sh", "active"])
     # output, error = process.communicate()
     try:
         with open('mr.json') as json_file:
             data = json.load(json_file)
-        return(data["web_url"])
+        os.remove('mr.json')
+        try:
+            output = data["web_url"]
+        except:
+            output = "look in previous mr"
+        return(output)
     except OSError:
         return("cant find mr.json")
 
@@ -86,15 +91,15 @@ def banned_processing(text):
         r'([a-z]|[A-Z]|[0-9])*\.([a-z]|[A-Z]|[0-9])*', text)]
     for url in allurls:
         string = "s/  - name: "+url+"\n    state: active/  - name: "+url+"\n    state: banned/igs"
-        subprocess.Popen(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
+        subprocess.call(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
 
-    subprocess.Popen(["bash", currentDir+"/gitprocessing.sh", "banned"])
+    subprocess.call(["bash", currentDir+"/gitprocessing.sh", "banned"])
     try:
         with open('mr.json') as json_file:
             data = json.load(json_file)
         return(data["web_url"])
     except OSError:
-        return("cant find mr.json")
+        return("cant find mr.json. Something wrong!")
 
 
 def check_message(text):
