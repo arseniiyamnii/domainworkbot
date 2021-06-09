@@ -15,7 +15,7 @@ export DOMAIN_MAIN_URL_END=""
 ```
   
 usage  
-`./main.py init`  
+`./main.py init` for download repo  
 `./main.py start`  
   
   

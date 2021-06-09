@@ -169,3 +169,17 @@ if __name__ == '__main__':
             ("git clone "+os.environ['GITLAB_REPO_SSH']+" repo").split(),
             stdout=subprocess.PIPE)
         output, error = process.communicate()
+    if str(sys.argv[1]) == "test":
+        message = """abc
+def
+ghi"""
+        if new_domain_check(message):
+            answer=(str(active_processing(message)))
+        elif banned_check(message):
+            answer=(str(banned_processing(message)))
+        else:
+            answer=(False)
+
+        if answer:
+            print(str(answer))
+            
