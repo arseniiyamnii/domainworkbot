@@ -15,6 +15,16 @@ export GITLAB_REPO_SSH=""
 export DOMAIN_MAIN_URL_START=""
 export DOMAIN_MAIN_URL_END=""
 ```
+example:  
+```
+export TELEGRAMM_API_BOT_TOKEN="xxx777xxx777"
+export GITLAB_ACCESS_TOKEN="777xxx777xxx"
+export GITLAB_PROJECT_ID="123456"
+export GITLAB_REPO_SSH="git@gitlab.com/1xbet/1xbet"
+export DOMAIN_MAIN_URL_START="1xbet"
+export DOMAIN_MAIN_URL_END=".com"
+```
+
 4-run ./main.py start  
 `./main.py start`  
   
