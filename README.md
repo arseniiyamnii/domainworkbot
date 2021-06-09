@@ -1,10 +1,12 @@
 How to use?  
-1-install dependency  
-2- ./main.py init  
-3-export varts  
-4-run ./main.py start  
+1-install dependencys
+dep  
+`sudo apt install python3-pip`  
+`pip3 install -r requirements.txt`  
 
-exports
+2- ./main.py init  
+`./main.py init` for download repo  
+3-export vars  
 ```
 export TELEGRAMM_API_BOT_TOKEN=""
 export GITLAB_ACCESS_TOKEN=""
@@ -13,12 +15,7 @@ export GITLAB_REPO_SSH=""
 export DOMAIN_MAIN_URL_START=""
 export DOMAIN_MAIN_URL_END=""
 ```
-  
-usage  
-`./main.py init` for download repo  
+4-run ./main.py start  
 `./main.py start`  
   
   
-dep  
-`sudo apt install python3-pip`  
-`pip3 install -r requirements.txt`  
