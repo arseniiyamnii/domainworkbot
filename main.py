@@ -103,10 +103,14 @@ def banned_processing(text):
 
 
 def check_message(text):
-    if new_domain_check(text.text):
-        return(str(active_processing(text.text)))
-    elif banned_check(text.text):
-        return(str(banned_processing(text.text)))
+    try:
+        msg=text.text
+    except:
+        msg=text
+    if new_domain_check(msg):
+        return(str(active_processing(msg)))
+    elif banned_check(msg):
+        return(str(banned_processing(msg)))
     else:
         return(False)
 
@@ -130,6 +134,13 @@ def echo(update, context):
     answer = check_message(update.message)
     if answer:
         update.message.reply_text(str(answer))
+
+
+def manual():
+    text = sys.argv[1]
+    answer = check_message(text)
+    if answer:
+        print(str(answer))
 
 
 def error(update, context):
@@ -187,4 +198,5 @@ ghi"""
 
         if answer:
             print(str(answer))
-            
+    else:
+        manual()

@@ -1,15 +1,22 @@
 #!/bin/bash
 function gitProcess {
 	git checkout master && git pull
-	git checkout -b new-active-domains-$(date '+%d%m%Y') || git checkout ${1}-$(date '+%d%m%y')
+	git checkout ${1}-$(date '+%d%m%y')
 	git add .
-	message="${1} $(date '+%d%m%Y')"
+	if [[ ${1} = "new-active-domains" ]]
+	then
+	message="New active domains from $(date '+%Y/%m/%d')"
+	elif [[ ${1} = "banned-domains" ]]
+	then
+	message="Banned domains from $(date '+%Y/%m/%d')"
+	else
+	message="${1} from $(date '+%Y/%m/%d')"
+	fi
 	git commit -m "${message}"
-	git push -u origin "${1}"-$(date '+%d%m%Y')
+	git push -u origin $(git branchname)
 	#rm mr.json &>/dev/null
 	echo "end PUSH and Start MR"
-	curl -X POST -F "source_branch=${1}-$(date '+%d%m%Y')" -F "target_branch=master" -F "access_token=${GITLAB_ACCESS_TOKEN}" -F "title=${message}" https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/merge_requests > mr.json
-	
+	curl -X POST -F "source_branch=$(git branchname)" -F "target_branch=master" -F "access_token=${GITLAB_ACCESS_TOKEN}" -F "title=${message}" https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/merge_requests > mr.json
 }
 if [ "$1" == "active" ]; then
 	gitProcess new-active-domains
