@@ -58,17 +58,27 @@ def banned_check(text):
 def active_processing(text):
     global currentDir
     os.chdir(currentDir+'/repo')
+    with open("vars/production.yml", 'r') as f:
+        prod = f.readlines()
     for i in text.split():
         domain =\
             os.environ["DOMAIN_MAIN_URL_START"]\
             + i +\
             os.environ["DOMAIN_MAIN_URL_END"]
         print(domain)
-        string = "s/    state: active\n\n/    state: active\n  - name: "+domain+"\n    state: active\n\n/igs"
-        # perl -0777 -i -pe "${string}" vars/production.yml
-
-        subprocess.call(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
-        # output, error = process.communicate()
+        space = [i for i, x in enumerate(prod) if x == "\n"]
+        lastline = 0
+        for i in space:
+            # print(prod[int(i)-1])
+            if prod[int(i)-1] == "    state: active\n" or prod[int(i)-1] == "    state: banned\n":
+                lastline = i
+                break
+        prod.insert(lastline, "    state: active\n")
+        prod.insert(lastline, "  - name: "+url+"\n")
+    with open("vars/production.yml", 'w') as f:
+        for item in prod:
+            f.write(item)
+ 
     subprocess.call(["bash", currentDir+"/gitprocessing.sh", "active"])
     # output, error = process.communicate()
     try:
@@ -87,11 +97,33 @@ def active_processing(text):
 def banned_processing(text):
     global currentDir
     os.chdir(currentDir+'/repo')
+    with open("vars/production.yml", 'r') as f:
+        prod = f.readlines()
     allurls = [x.group() for x in re.finditer(
         r'([a-z]|[A-Z]|[0-9])*\.([a-z]|[A-Z]|[0-9])*', text)]
     for url in allurls:
-        string = "s/  - name: "+url+"\n    state: active/  - name: "+url+"\n    state: banned/igs"
-        subprocess.call(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
+        ind = int(prod.index("  - name: "+url+"\n"))
+        del prod[ind]
+        del prod[ind]
+        space = [i for i, x in enumerate(prod) if x == "\n"]
+        lastline = 0
+        for i in space:
+            # print(prod[int(i)-1])
+            if prod[int(i)-1] == "    state: active\n" or prod[int(i)-1] == "    state: banned\n":
+                lastline = i
+                break
+        prod.insert(lastline, "    state: banned\n")
+        prod.insert(lastline, "  - name: "+url+"\n")
+    with open("vars/production.yml", 'w') as f:
+        for item in prod:
+            f.write(item)
+    # for url in allurls:
+        # string = "s/  - name: "+url+"\n    state: active//igs"
+        # subprocess.call(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
+        # string = "s/    state: active\n\n/    state: active\n  - name: "+url+"\n    state: banned\n\n/igs"
+        # # perl -0777 -i -pe "${string}" vars/production.yml
+
+        # subprocess.call(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
 
     subprocess.call(["bash", currentDir+"/gitprocessing.sh", "banned"])
     try:
