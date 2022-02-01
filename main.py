@@ -55,7 +55,7 @@ def banned_check(text):
         return(False)
 
 
-def active_processing(text):
+def active_processing(text, mode):
     global currentDir
     os.chdir(currentDir+'/repo')
     with open("vars/production.yml", 'r') as f:
@@ -74,27 +74,15 @@ def active_processing(text):
                 lastline = i
                 break
         prod.insert(lastline, "    state: active\n")
-        prod.insert(lastline, "  - name: "+url+"\n")
+        prod.insert(lastline, "  - name: "+domain+"\n")
     with open("vars/production.yml", 'w') as f:
         for item in prod:
             f.write(item)
- 
-    subprocess.call(["bash", currentDir+"/gitprocessing.sh", "active"])
-    # output, error = process.communicate()
-    try:
-        with open('mr.json') as json_file:
-            data = json.load(json_file)
-        os.remove('mr.json')
-        try:
-            output = data["web_url"]
-        except:
-            output = "look in previous mr"
-        return(output)
-    except OSError:
-        return("cant find mr.json")
+    answer=gitprocess("active", mode)
+    return(answer)
 
 
-def banned_processing(text):
+def banned_processing(text,mode):
     global currentDir
     os.chdir(currentDir+'/repo')
     with open("vars/production.yml", 'r') as f:
@@ -124,31 +112,34 @@ def banned_processing(text):
         # # perl -0777 -i -pe "${string}" vars/production.yml
 
         # subprocess.call(["perl", "-0777", "-i", "-pe", string, "vars/production.yml"])
-
-    subprocess.call(["bash", currentDir+"/gitprocessing.sh", "banned"])
-    try:
-        with open('mr.json') as json_file:
-            data = json.load(json_file)
-        return(data["web_url"])
-    except OSError:
-        return("cant find mr.json. Something wrong!")
+    answer=gitprocess("banned", mode)
+    return(answer)
 
 
-def check_message(text):
+def check_message(text,mode):
     try:
         msg=text.text
     except:
         msg=text
     if new_domain_check(msg):
-        return(str(active_processing(msg)))
+        return(str(active_processing(msg, mode)))
     elif banned_check(msg):
-        return(str(banned_processing(msg)))
+        return(str(banned_processing(msg, mode)))
     else:
         return(False)
 
 # Define a few command handlers.
 # These usually take the two arguments update andcontext.
 # Error handlers also receive the raised TelegramError object in error.
+
+def gitprocess(text, mode):
+    subprocess.call(["bash", currentDir+"/gitprocessing.sh", text, str(mode)])
+    try:
+        with open('mr.json') as json_file:
+            data = json.load(json_file)
+        return(data["web_url"])
+    except OSError:
+        return("cant find mr.json. Something wrong!")
 
 
 def start(update, context):
@@ -168,9 +159,9 @@ def echo(update, context):
         update.message.reply_text(str(answer))
 
 
-def manual():
-    text = sys.argv[1]
-    answer = check_message(text)
+def manual(myargv=1):
+    text = sys.argv[myargv]
+    answer = check_message(text, myargv)
     if answer:
         print(str(answer))
 
@@ -217,6 +208,7 @@ if __name__ == '__main__':
             ("git clone "+os.environ['GITLAB_REPO_SSH']+" repo").split(),
             stdout=subprocess.PIPE)
         output, error = process.communicate()
+        exit()
     if str(sys.argv[1]) == "test":
         message = """abc
 def
@@ -230,5 +222,7 @@ ghi"""
 
         if answer:
             print(str(answer))
+    if str(sys.argv[1]) == "add":
+        manual(2)
     else:
         manual()
