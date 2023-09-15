@@ -41,9 +41,9 @@ logger = logging.getLogger(__name__)
 def new_domain_check(text):
     check = True
     for line in text.split():
-        if len(line) > 10:
+        if len(line) > 15:
             check = False
-        if not bool(re.match(r"^([A-Z]|[a-z]|[0-9])+$", line)):
+        if not bool(re.match(r"^([A-Z]|[a-z]|[0-9])+$", line)) and not bool(re.match(r"^vavada([A-Z]|[a-z]|[0-9])+.com$", line)):
             check = False
     return(check)
 
@@ -61,10 +61,13 @@ def active_processing(text, mode):
     with open("vars/production.yml", 'r') as f:
         prod = f.readlines()
     for i in text.split():
-        domain =\
-            os.environ["DOMAIN_MAIN_URL_START"]\
-            + i +\
-            os.environ["DOMAIN_MAIN_URL_END"]
+        if bool(re.match(r"^vavada([A-Z]|[a-z]|[0-9])+.com$", i)):
+            domain = i
+        else:
+            domain =\
+                os.environ["DOMAIN_MAIN_URL_START"]\
+                + i +\
+                os.environ["DOMAIN_MAIN_URL_END"]
         print(domain)
         space = [i for i, x in enumerate(prod) if x == "\n"]
         lastline = 0
@@ -78,6 +81,7 @@ def active_processing(text, mode):
     with open("vars/production.yml", 'w') as f:
         for item in prod:
             f.write(item)
+    answer = ""
     answer=gitprocess("active", mode)
     return(answer)
 
@@ -122,6 +126,7 @@ def check_message(text,mode):
     except:
         msg=text
     if new_domain_check(msg):
+        print("adding new domains")
         return(str(active_processing(msg, mode)))
     elif banned_check(msg):
         return(str(banned_processing(msg, mode)))
@@ -203,6 +208,16 @@ def main():
 if __name__ == '__main__':
     if str(sys.argv[1]) == "start":
         main()
+    if str(sys.argv[1]) == "reinit":
+        process = subprocess.Popen(
+            ("rm -rf repo").split(),
+            stdout=subprocess.PIPE)
+        output, error = process.communicate()
+        process = subprocess.Popen(
+            ("git clone "+os.environ['GITLAB_REPO_SSH']+" repo").split(),
+            stdout=subprocess.PIPE)
+        output, error = process.communicate()
+        exit()
     if str(sys.argv[1]) == "init":
         process = subprocess.Popen(
             ("git clone "+os.environ['GITLAB_REPO_SSH']+" repo").split(),
