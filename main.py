@@ -77,6 +77,7 @@ def active_processing(text, mode):
                 lastline = i
                 break
         prod.insert(lastline, "    state: active\n")
+        prod.insert(lastline, "    kind: combined\n")
         prod.insert(lastline, "  - name: "+domain+"\n")
     with open("vars/production.yml", 'w') as f:
         for item in prod:
@@ -97,6 +98,8 @@ def banned_processing(text,mode):
         ind = int(prod.index("  - name: "+url+"\n"))
         del prod[ind]
         del prod[ind]
+        if "  - name" not in prod[ind]:
+            del prod[ind]
         space = [i for i, x in enumerate(prod) if x == "\n"]
         lastline = 0
         for i in space:
